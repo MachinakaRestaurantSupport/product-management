@@ -28,7 +28,7 @@ def _render_shell(
     subtitle: str,
     active_subtab: str,
     body_html: str,
-    detail_href: str = "/ui/products/1",
+    detail_href: str = "/ui/products/prod-1",
 ) -> str:
     nav_html = "".join(
         f'<a class="nav-pill{" active" if key == "product" else ""}" href="{href}">{escape(label)}</a>'
@@ -355,8 +355,8 @@ def _format_product_row(product: Product) -> str:
     )
     return (
         f"<tr>"
-        f"<td><strong>#{product.id}</strong></td>"
-        f'<td><a href="/ui/products/{product.id}" style="color:#0f172a;font-weight:700;text-decoration:none">'
+        f"<td><strong>{escape(str(product.id))}</strong></td>"
+        f'<td><a href="/ui/products/{escape(str(product.id))}" style="color:#0f172a;font-weight:700;text-decoration:none">'
         f"{escape(product.name)}</a></td>"
         f'<td><span class="badge badge-tag">{escape(product.category)}</span></td>'
         f'<td class="price">¥{product.price:,}</td>'
@@ -365,7 +365,7 @@ def _format_product_row(product: Product) -> str:
         f"<td>{product.prep_time_minutes} 分</td>"
         f"<td>{options_html}</td>"
         f"<td>{takeout_badge}</td>"
-        f'<td><a class="btn btn-secondary" style="padding:4px 10px;font-size:12px" href="/ui/products/{product.id}">編集</a></td>'
+        f'<td><a class="btn btn-secondary" style="padding:4px 10px;font-size:12px" href="/ui/products/{escape(str(product.id))}">編集</a></td>'
         f"</tr>"
     )
 
@@ -385,7 +385,7 @@ def create_ui_router(store: ProductStore) -> APIRouter:
             if all_products
             else 0
         )
-        first_id = all_products[0].id if all_products else 1
+        first_id = all_products[0].id if all_products else "prod-1"
 
         rows_html = "".join(_format_product_row(p) for p in products)
         if not rows_html:
@@ -456,7 +456,7 @@ def create_ui_router(store: ProductStore) -> APIRouter:
     @router.get("/ui/products/new", response_class=HTMLResponse)
     def product_new_page() -> str:
         all_products = store.list_products()
-        first_id = all_products[0].id if all_products else 1
+        first_id = all_products[0].id if all_products else "prod-1"
         body = """
         <div class="form-grid">
           <div class="card">
@@ -576,7 +576,7 @@ def create_ui_router(store: ProductStore) -> APIRouter:
         )
 
     @router.get("/ui/products/{product_id}", response_class=HTMLResponse)
-    def product_detail_page(product_id: int) -> str:
+    def product_detail_page(product_id: str) -> str:
         product = store.get(product_id)
         if product is None:
             raise HTTPException(
@@ -598,10 +598,10 @@ def create_ui_router(store: ProductStore) -> APIRouter:
         <div class="form-grid">
           <div class="card">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-              <h2 style="margin:0;font-size:16px">商品スペック編集（ID: #{product.id}）</h2>
+              <h2 style="margin:0;font-size:16px">商品スペック編集（ID: {escape(product.id)}）</h2>
               {takeout_badge}
             </div>
-            <form onsubmit="updateProduct(event, {product.id})">
+            <form onsubmit="updateProduct(event, '{escape(product.id)}')">
               <div class="field-grid">
                 <div class="field">
                   <label>商品名</label>
@@ -641,14 +641,14 @@ def create_ui_router(store: ProductStore) -> APIRouter:
               </div>
               <div style="display:flex;gap:10px;margin-top:18px;justify-content:flex-end">
                 <a class="btn btn-secondary" href="/ui/products">商品一覧に戻る</a>
-                <button type="submit" class="btn btn-primary">変更内容を保存（PUT /products/{product.id}）</button>
+                <button type="submit" class="btn btn-primary">変更内容を保存（PUT /products/{escape(product.id)}）</button>
               </div>
             </form>
           </div>
           <div class="card">
             <h2 style="margin:0 0 12px;font-size:16px">登録情報サマリー</h2>
             <div class="preview-box">
-              <div style="font-size:12px;color:#64748b">商品コード: PROD-{product.id:04d}</div>
+              <div style="font-size:12px;color:#64748b">商品コード: {escape(product.id)}</div>
               <h3 style="margin:6px 0;font-size:20px">{escape(product.name)}</h3>
               <div style="font-size:24px;font-weight:800;color:#ea580c;margin-bottom:12px">¥{product.price:,}</div>
               <p style="margin:6px 0;font-size:13px"><strong>分類:</strong> {escape(product.category)}</p>
