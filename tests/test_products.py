@@ -156,3 +156,31 @@ def test_update_product_validation_error(client: TestClient) -> None:
         json={"name": "コーヒー", "category": "ドリンク", "price": -100},
     )
     assert response.status_code == 422
+
+
+def test_product_ui_screens(client: TestClient) -> None:
+    created = client.post(
+        "/products",
+        json={
+            "name": "ボロネーゼ",
+            "category": "パスタ",
+            "price": 1200,
+            "allergens": ["小麦"],
+            "calories": 780,
+        },
+    ).json()
+
+    res_list = client.get("/ui/products")
+    assert res_list.status_code == 200
+    assert "ボロネーゼ" in res_list.text
+
+    res_new = client.get("/ui/products/new")
+    assert res_new.status_code == 200
+    assert "新規商品マスタ登録" in res_new.text
+
+    res_detail = client.get(f"/ui/products/{created['id']}")
+    assert res_detail.status_code == 200
+    assert "ボロネーゼ" in res_detail.text
+
+    res_missing = client.get("/ui/products/999")
+    assert res_missing.status_code == 404

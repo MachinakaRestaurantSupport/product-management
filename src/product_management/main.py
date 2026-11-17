@@ -4,12 +4,14 @@ from fastapi import FastAPI, HTTPException, status
 
 from product_management.models import Product, ProductCreate, ProductUpdate
 from product_management.store import ProductStore
+from product_management.ui import create_ui_router
 
 
 def create_app() -> FastAPI:
     """FastAPI アプリケーションインスタンスを生成する."""
     application = FastAPI(title="Product Management Service", version="0.1.0")
     store = ProductStore()
+    application.include_router(create_ui_router(store))
 
     @application.get("/health")
     def health() -> dict[str, str]:
