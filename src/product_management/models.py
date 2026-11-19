@@ -28,4 +28,4 @@ class ProductUpdate(ProductBase):
 class Product(ProductBase):
     """商品レスポンス・永続化モデル."""
 
-    id: int
+    id: str

@@ -27,8 +27,9 @@ def test_create_product_with_defaults_and_full_fields(client: TestClient) -> Non
     res_min = client.post("/products", json=minimal_payload)
     assert res_min.status_code == 201
     data_min = res_min.json()
-    assert data_min == {
-        "id": 1,
+    assert isinstance(data_min["id"], str)
+    assert data_min["id"].startswith("prod-")
+    assert {k: v for k, v in data_min.items() if k != "id"} == {
         "name": "ブレンドコーヒー",
         "category": "ドリンク",
         "price": 450,
@@ -54,7 +55,8 @@ def test_create_product_with_defaults_and_full_fields(client: TestClient) -> Non
     res_full = client.post("/products", json=full_payload)
     assert res_full.status_code == 201
     data_full = res_full.json()
-    assert data_full["id"] == 2
+    assert isinstance(data_full["id"], str)
+    assert data_full["id"] != data_min["id"]
     assert data_full["name"] == "特製カツカレー"
     assert data_full["allergens"] == ["小麦", "豚肉"]
     assert data_full["takeout_available"] is False
@@ -182,5 +184,5 @@ def test_product_ui_screens(client: TestClient) -> None:
     assert res_detail.status_code == 200
     assert "ボロネーゼ" in res_detail.text
 
-    res_missing = client.get("/ui/products/999")
+    res_missing = client.get("/ui/products/prod-missing")
     assert res_missing.status_code == 404
