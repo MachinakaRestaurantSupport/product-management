@@ -30,7 +30,7 @@ def create_app() -> FastAPI:
         return store.list_products(takeout_available=takeout_available)
 
     @application.get("/products/{product_id}", response_model=Product)
-    def get_product(product_id: int) -> Product:
+    def get_product(product_id: str) -> Product:
         product = store.get(product_id)
         if product is None:
             raise HTTPException(
@@ -40,7 +40,7 @@ def create_app() -> FastAPI:
         return product
 
     @application.put("/products/{product_id}", response_model=Product)
-    def update_product(product_id: int, payload: ProductUpdate) -> Product:
+    def update_product(product_id: str, payload: ProductUpdate) -> Product:
         updated = store.update(product_id, payload)
         if updated is None:
             raise HTTPException(
